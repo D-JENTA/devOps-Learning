@@ -29,14 +29,14 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: |
-            cd /h/c/healt-api
+        script: |
+          cd /home/cd-int/healt-api
 
-            echo "Pulling latest Docker images..."
-            docker compose pull
+          echo "Pulling latest Docker images..."
+          docker compose pull
 
-            echo "Updating containers..."
-            docker compose up -d --remove-orphans
+          echo "Updating containers..."
+          docker compose up -d --remove-orphans
 
-            echo "Checking containers..."
-            docker compose ps
+          echo "Checking containers..."
+          docker compose ps
