@@ -12,9 +12,13 @@ on:
       - master
       - main
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
-    name: Build Application
+    name: Build and Push Docker Images
     runs-on: ubuntu-latest
 
     steps:
@@ -22,10 +26,39 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      # 2. Memeriksa konfigurasi Docker Compose
+      # 2. Memvalidasi Docker Compose
       - name: Validate Docker Compose
-        run: docker compose config --quiet
+        run: docker compose -f docker-compose.yml config --quiet
 
-      # 3. Build Backend dan Frontend
-      - name: Build Docker Images
-        run: docker compose build
+      # 3. Mengaktifkan Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4. Login ke GitHub Container Registry
+      - name: Login to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 5. Build dan push backend
+      - name: Build and Push Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Backend
+          file: ./Backend/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: ghcr.io/d-jenta/devops-learning-backend:latest
+
+      # 6. Build dan push frontend
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Frontend
+          file: ./Frontend/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          build-args: |
+            VITE_API_URL=/api
+          tags: ghcr.io/d-jenta/devops-learning-frontend:latest
