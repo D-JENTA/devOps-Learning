@@ -1,0 +1,31 @@
+
+name: Health API CI Pipeline
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Mengambil source code dari repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Memeriksa konfigurasi Docker Compose
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+
+      # 3. Build Backend dan Frontend
+      - name: Build Docker Images
+        run: docker compose build
