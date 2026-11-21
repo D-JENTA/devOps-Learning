@@ -1,0 +1,42 @@
+
+name: Health API CD Pipeline
+
+on:
+  workflow_run:
+    workflows:
+      - Health API CI Pipeline
+    types:
+      - completed
+    branches:
+      - master
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+
+    # Deploy hanya jika CI berhasil dan berasal dari push
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /h/c/healt-api
+
+            echo "Pulling latest Docker images..."
+            docker compose pull
+
+            echo "Updating containers..."
+            docker compose up -d --remove-orphans
+
+            echo "Checking containers..."
+            docker compose ps
