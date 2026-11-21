@@ -35,7 +35,7 @@ function App() {
 
   return (
     <div>
-      <h1>Server Health Monitoring</h1>
+      <h1>Server Health Monitoring nihhh</h1>
 
       <button onClick={fetchHealth}>
         Refresh Data
