@@ -2,24 +2,30 @@ name: Health API CD Pipeline
 
 on:
   workflow_run:
-    workflows:
-      - Health API CI Pipeline
-    types:
-      - completed
-    branches:
-      - master
-      - main
+    workflows: ["Health API CI Pipeline"]
+    types: [completed]
+    branches: [master, main]
 
 jobs:
   deploy:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
-
     if: >
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push'
 
     steps:
+      - name: Check SSH secrets
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          for v in SSH_HOST SSH_USER SSH_PRIVATE_KEY; do
+            if [ -z "${!v}" ]; then echo "ERROR: $v kosong"; exit 1; fi
+          done
+          echo "Semua secret tersedia"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -28,24 +34,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            set -e
             cd /home/cd-int/healt-api
-
-            echo "Pulling latest Docker images..."
             docker compose pull
-
-            echo "Updating containers..."
             docker compose up -d --remove-orphans
-
-            echo "Checking containers..."
             docker compose ps
-
-                  - name: Check SSH Secret
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          if [ -z "$SSH_PRIVATE_KEY" ]; then
-            echo "ERROR: SSH_PRIVATE_KEY is EMPTY"
-            exit 1
-          else
-            echo "SUCCESS: SSH_PRIVATE_KEY is available"
-          fi
