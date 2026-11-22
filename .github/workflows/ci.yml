@@ -1,4 +1,3 @@
-
 name: Health API CI Pipeline
 
 on:
@@ -17,8 +16,46 @@ permissions:
   packages: write
 
 jobs:
+  lint:
+    name: Lint Backend and Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Mengambil source code dari repository
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      # 2. Setup Node.js dengan cache npm untuk Backend & Frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            Backend/package-lock.json
+            Frontend/package-lock.json
+
+      # 3. Install & Lint Backend
+      - name: Install Backend Dependencies
+        working-directory: ./Backend
+        run: npm ci
+
+      - name: Lint Backend
+        working-directory: ./Backend
+        run: npm run lint
+
+      # 4. Install & Lint Frontend
+      - name: Install Frontend Dependencies
+        working-directory: ./Frontend
+        run: npm ci
+
+      - name: Lint Frontend
+        working-directory: ./Frontend
+        run: npm run lint
+
   build:
     name: Build and Push Docker Images
+    needs: lint
     runs-on: ubuntu-latest
 
     steps:
