@@ -37,6 +37,7 @@ function App() {
     <div>
       <h1>Server Health Monitoring tessss nihhh</h1>
       <h1>CI/CD DEPLOYMENT TEST V2</h1>
+      <h1>masih di tes nih</h1>
 
       <button onClick={fetchHealth}>
         Refresh Data
