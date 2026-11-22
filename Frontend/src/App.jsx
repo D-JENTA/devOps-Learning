@@ -9,7 +9,7 @@ function App() {
 
   async function fetchHealth() {
     try {
-      const response = await fetch(`${API_URL}/api/health`);
+      const response = await fetch(`${API_URL}/health`);
 
       if (!response.ok) {
         throw new Error("Gagal mengambil data server");
