@@ -15,7 +15,8 @@ WORKDIR /app
 
 COPY --from=dependencies /app/node_modules ./node_modules
 
-COPY . .
+COPY --chown=node:node . .
+USER node
 
 EXPOSE 3000
 
